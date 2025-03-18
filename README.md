@@ -1,7 +1,7 @@
-maze-solver-robot
+#maze-solver-robot
 This Arduino code is designed to control a simple robot equipped with ultrasonic sensors and DC motors for navigation. The robot can move forward, turn left, or turn right based on the distance measurements from its front, left, and right sensors.
 
-Hardware Setup:
+#Hardware Setup:
 Motors: Two sets of motors, left and right, are connected to pins 9, 10, 11 (left motors) and 3, 4, 5 (right motors).
 Ultrasonic Sensors: Three ultrasonic sensors are connected to the Arduino, with the front sensor using pins A0 (trigger) and A1 (echo), the left sensor using pins A2 (trigger) and A3 (echo), and the right sensor using pins A4 (trigger) and A5 (echo).
 Functions:
