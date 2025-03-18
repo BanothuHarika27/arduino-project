@@ -31,5 +31,5 @@ The robot moves forward if there is no obstacle within 20 cm in front.
 It adjusts its direction based on the distances measured by the left and right sensors.
 If an obstacle is detected within 20 cm in front, the robot stops and turns to the right.
 If both the front and right paths are blocked, it turns further to the right.
-Serial Output:
+ Serial Output:
 The code outputs the distance readings from the front, left, and right sensors to the Serial Monitor for debugging purposes.
