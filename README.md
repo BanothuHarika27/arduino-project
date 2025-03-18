@@ -23,14 +23,14 @@ This Arduino code is designed to control a simple robot equipped with ultrasonic
     - Turns the robot to the right by driving the left motors forward and the right motors backward.
 ### 5. left():
 
- -  Turns the robot to the left by driving the left motors backward and the right motors forward.
-Stop():
+     - Turns the robot to the left by driving the left motors backward and the right motors forward.
+### 6. Stop():
 
-Stops all motors.
-Control Logic:
-The robot moves forward if there is no obstacle within 20 cm in front.
-It adjusts its direction based on the distances measured by the left and right sensors.
-If an obstacle is detected within 20 cm in front, the robot stops and turns to the right.
-If both the front and right paths are blocked, it turns further to the right.
-Serial Output:
-The code outputs the distance readings from the front, left, and right sensors to the Serial Monitor for debugging purposes.
+    - Stops all motors.
+## Control Logic:
+    - The robot moves forward if there is no obstacle within 20 cm in front.
+    - It adjusts its direction based on the distances measured by the left and right sensors.
+    - If an obstacle is detected within 20 cm in front, the robot stops and turns to the right.
+    - If both the front and right paths are blocked, it turns further to the right.
+## Serial Output:
+    - The code outputs the distance readings from the front, left, and right sensors to the Serial Monitor for debugging purposes.
