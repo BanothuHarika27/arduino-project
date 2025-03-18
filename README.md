@@ -20,7 +20,7 @@ This Arduino code is designed to control a simple robot equipped with ultrasonic
    - Drives both motors forward.
 ### 4. right():
 
-    - Turns the robot to the right by driving the left motors forward and the right motors backward.
+  - Turns the robot to the right by driving the left motors forward and the right motors backward.
 ### 5. left():
 
      - Turns the robot to the left by driving the left motors backward and the right motors forward.
