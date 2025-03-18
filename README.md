@@ -1,4 +1,4 @@
-# MAZE-SOLVER-ROBERT
+# MAZE-SOLVER-ROBOT
 This Arduino code is designed to control a simple robot equipped with ultrasonic sensors and DC motors for navigation. The robot can move forward, turn left, or turn right based on the distance measurements from its front, left, and right sensors.
 
 Hardware Setup:
