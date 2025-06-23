@@ -33,8 +33,8 @@ This Arduino code is designed to automate a toll collection system using an RFID
    * Activates red LED and buzzer.
 ### 6. showInsufficientBalance ():
 
-   -Displays low balance warning and prompts to add funds.
-   *Red LED flashes as indicator.
+   - Displays low balance warning and prompts to add funds.
+   * Red LED flashes as indicator.
 ## Control Logic:
    - Gate opens only when a valid card is scanned and sufficient balance is available.
    - Toll amount is deducted from stored balance on each successful scan.
