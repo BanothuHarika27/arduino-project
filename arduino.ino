@@ -1,124 +1,141 @@
-int motor_lA = 9;
-int motor_lB = 10;
-int motor_enableA = 11;
+#include <SPI.h>
+#include <MFRC522.h>
+#include <Servo.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
-int motor_rA = 3;
-int motor_rB = 4;
-int motor_enableB = 5;
+// RFID Setup
+#define SS_PIN 10
+#define RST_PIN 9
+MFRC522 rfid(SS_PIN, RST_PIN);
 
-int trigger_front = A0;
-int echo_front = A1;
+// Servo Setup
+Servo servo1;
+Servo servo2;
+int servo1Pin = 2;
+int servo2Pin = 5;
 
-int trigger_left = A2;
-int echo_left = A3;
+// LEDs, Buzzer
+int greenLED = 7;
+int redLED = 6;
+int buzzer = 3;
 
-int trigger_right = A4;
-int echo_right = A5;
+// LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Card UID (replace with your actual UID)
+byte validCard[4] = {0x71, 0x4A, 0xA6, 0x08};
+
+// Balance and Toll
+int balance = 10000;    // Initial balance
+int tollCharge = 25;    // Per entry
 
 void setup() {
-  // Initialize motor control pins
-  pinMode(motor_lA, OUTPUT);
-  pinMode(motor_lB, OUTPUT);
-  pinMode(motor_enableA, OUTPUT);
-  pinMode(motor_rA, OUTPUT);
-  pinMode(motor_rB, OUTPUT);
-  pinMode(motor_enableB, OUTPUT);
-
-  // Initialize ultrasonic sensor pins
-  pinMode(trigger_front, OUTPUT);
-  pinMode(echo_front, INPUT);
-  pinMode(trigger_left, OUTPUT);
-  pinMode(echo_left, INPUT);
-  pinMode(trigger_right, OUTPUT);
-  pinMode(echo_right, INPUT);
-
-  // Set initial motor speed
-  analogWrite(motor_enableA, 80);
-  analogWrite(motor_enableB, 88);
-
-  // Initialize serial communication
   Serial.begin(9600);
+  SPI.begin();
+  rfid.PCD_Init();
+
+  servo1.attach(servo1Pin);
+  servo2.attach(servo2Pin);
+
+  // Initial positions for opposite rotation
+  servo1.write(0);     // Start at 0°
+  servo2.write(180);   // Start at 180°
+
+  pinMode(greenLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("RFID Toll System");
+  delay(2000);
+  lcd.clear();
 }
 
 void loop() {
-  long duration_front, distance_front, duration_left, distance_left, duration_right, distance_right;
+  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
 
-  // Calculate distances
-  distance_front = calculateDistance(trigger_front, echo_front);
-  distance_left = calculateDistance(trigger_left, echo_left);
-  distance_right = calculateDistance(trigger_right, echo_right);
-
-  // Print distances to Serial Monitor
-  Serial.print("front = ");
-  Serial.println(distance_front);
-  Serial.print("Left = ");
-  Serial.println(distance_left);
-  Serial.print("Right = ");
-  Serial.println(distance_right);
-  delay(50);
-
-  // Navigation logic
-  if (distance_front > 20) {
-    forward();
-    if (distance_left > 10 && distance_left < 20) {
-      forward();
-    } else if (distance_left >= 20) {
-      left();
-      delay(30);
-      forward();
-    } else if (distance_left < 10 && distance_left > 0) {
-      right();
-      delay(30);
-      forward();
-    }
-  } else if (distance_front <= 20 && distance_right > 20) {
-    Stop();
-    delay(1000);
-    right();
-    delay(400);
-  } else if (distance_front <= 20 && distance_right < 20) {
-    Stop();
-    delay(1000);
-    right();
-    delay(800);
+  Serial.print("Scanned UID: ");
+  for (byte i = 0; i < 4; i++) {
+    Serial.print(rfid.uid.uidByte[i], HEX);
+    Serial.print(" ");
   }
+  Serial.println();
+
+  if (isValidCard(rfid.uid.uidByte)) {
+    if (balance >= tollCharge) {
+      balance -= tollCharge;
+      openGate();
+    } else {
+      showInsufficientBalance();
+    }
+  } else {
+    denyAccess();
+  }
+
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
+  delay(2000);
 }
 
-long calculateDistance(int triggerPin, int echoPin) {
-  digitalWrite(triggerPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(triggerPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(triggerPin, LOW);
-  long duration = pulseIn(echoPin, HIGH);
-  long distance = duration * 0.034 / 2;
-  return distance;
+bool isValidCard(byte *uid) {
+  for (byte i = 0; i < 4; i++) {
+    if (uid[i] != validCard[i]) return false;
+  }
+  return true;
 }
 
-void forward() {
-  digitalWrite(motor_lA, HIGH);
-  digitalWrite(motor_lB, LOW);
-  digitalWrite(motor_rA, HIGH);
-  digitalWrite(motor_rB, LOW);
+void openGate() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Access Granted");
+  lcd.setCursor(0, 1);
+  lcd.print("Bal: Rs ");
+  lcd.print(balance);
+
+  digitalWrite(greenLED, HIGH);
+  digitalWrite(redLED, LOW);
+  digitalWrite(buzzer, LOW);
+
+  // Rotate servos
+  servo1.write(180);  // Clockwise
+  servo2.write(0);    // Anti-clockwise
+  delay(3000);        // Keep gate open for 3 seconds
+
+  // Return to original positions
+  servo1.write(0);
+  servo2.write(180);
+
+  digitalWrite(greenLED, LOW);
+  lcd.clear();
 }
 
-void right() {
-  digitalWrite(motor_lA, HIGH);
-  digitalWrite(motor_lB, LOW);
-  digitalWrite(motor_rA, LOW);
-  digitalWrite(motor_rB, HIGH);
+void denyAccess() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Access Denied");
+
+  digitalWrite(redLED, HIGH);
+  digitalWrite(buzzer, HIGH);
+  delay(2000);
+  digitalWrite(redLED, LOW);
+  digitalWrite(buzzer, LOW);
+
+  lcd.clear();
 }
 
-void left() {
-  digitalWrite(motor_lA, LOW);
-  digitalWrite(motor_lB, HIGH);
-  digitalWrite(motor_rA, HIGH);
-  digitalWrite(motor_rB, LOW);
-}
+void showInsufficientBalance() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Low Balance!");
+  lcd.setCursor(0, 1);
+  lcd.print("Add Funds");
 
-void Stop() {
-  digitalWrite(motor_lA, LOW);
-  digitalWrite(motor_lB, LOW);
-  digitalWrite(motor_rA, LOW);
-  digitalWrite(motor_rB, LOW);
+  digitalWrite(redLED, HIGH);
+  delay(3000);
+  digitalWrite(redLED, LOW);
+
+  lcd.clear();
 }
