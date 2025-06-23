@@ -6,7 +6,7 @@ This Arduino code is designed to automate a toll collection system using an RFID
 + LCD Display: I2C LCD (16x2) at address 0x27.
 + Indicators: Green LED (pin 7), Red LED (pin 6), Buzzer (pin 3) for status indication.
 
-Functions:
+
 ## Functions:
 ### 1.  setup():
 
