@@ -126,6 +126,7 @@ void denyAccess() {
   lcd.clear();
 }
 
+
 void showInsufficientBalance() {
   lcd.clear();
   lcd.setCursor(0, 0);
